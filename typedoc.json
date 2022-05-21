@@ -1,0 +1,4 @@
+{
+  "out": "tsdoc/",
+  "listInvalidSymbolLinks": true
+}

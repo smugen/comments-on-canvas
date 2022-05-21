@@ -1,0 +1,31 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "enabled": true,
+  "ignorePaths": [
+    "**/package-lock.json",
+    "**/node_modules/**",
+    "**/vscode-extension/**",
+    "**/.git/objects/**",
+    "**/dist/**",
+    "*.tgz",
+    ".vscode",
+    "tsdoc",
+    ".gitignore",
+    ".gitmodules",
+    ".dockerignore",
+    "**/generated/graphql.ts",
+    "coverage"
+  ],
+  "ignoreRegExpList": [],
+  "ignoreWords": [
+    "bufferutil",
+    "dockerignore",
+    "gitmodules",
+    "typedi",
+    "typedoc",
+    "tsdoc",
+    "mkdir"
+  ],
+  "words": []
+}
