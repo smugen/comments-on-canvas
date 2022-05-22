@@ -20,19 +20,39 @@
     "node": "16.14.x"
   },
   "scripts": {
+    "docker-up": "docker compose --env-file=secret/.env up -d",
+    "docker-down": "docker compose --env-file=secret/.env down",
+    "docker-logs": "docker compose --env-file=secret/.env logs -f --tail=10",
     "tsdoc": "typedoc && start tsdoc/index.html",
     "cspell": "cspell **/*",
     "lint": "eslint src test ./*.js --ext js,ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build-clean": "rimraf dist && tsc --incremental false",
+    "test": "concurrently \"npm:lint\" \"npm:build\" && nyc mocha -r source-map-support/register -r reflect-metadata",
+    "coverage": "nyc report -r=html && start coverage/index.html",
+    "start": "cross-env-shell \"node $npm_package_bin_server\" || node $npm_package_bin_server",
+    "start-local": "env-cmd -f secret/.env npm start",
+    "start-inspect": "env-cmd -f secret/.env cross-env-shell \"node --inspect $npm_package_bin_server\"",
+    "watch": "nodemon -e ts,js -w src -w test -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-local\"",
+    "watch-inspect": "nodemon -e ts,js -w src -w test -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-inspect\"",
+    "prepare": "husky install"
   },
   "dependencies": {
+    "@typegoose/typegoose": "^9.8.1",
+    "class-validator": "^0.13.2",
+    "mongoose": "^6.3.4",
     "reflect-metadata": "^0.1.13",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "string-to-color": "^2.2.2",
+    "typedi": "^0.10.0",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "@types/node": "^17.0.35",
+    "@types/validator": "^13.7.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
+    "chai": "^4.3.6",
     "concurrently": "^7.2.0",
     "cross-env": "^7.0.3",
     "cspell": "^6.0.0",
@@ -43,7 +63,9 @@
     "husky": "^8.0.1",
     "import-sort-style-module": "^6.0.0",
     "lint-staged": "^12.4.1",
+    "mocha": "^10.0.0",
     "nodemon": "^2.0.16",
+    "nyc": "^15.1.0",
     "prettier": "^2.6.2",
     "prettier-plugin-import-sort": "^0.0.7",
     "rimraf": "^3.0.2",

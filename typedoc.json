@@ -1,4 +1,4 @@
 {
-  "out": "tsdoc/",
-  "listInvalidSymbolLinks": true
+  "entryPoints": "src/server.ts",
+  "out": "tsdoc/"
 }

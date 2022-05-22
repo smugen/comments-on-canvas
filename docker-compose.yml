@@ -1,0 +1,23 @@
+# https://docs.docker.com/compose/
+# https://docs.docker.com/compose/compose-file/compose-file-v3/
+version: "3.8"
+
+volumes:
+  mongodata:
+
+services:
+  db:
+    image: mongo:${MONGO_VERSION:-5.0}
+    restart: always
+    volumes:
+      - type: volume
+        source: mongodata
+        target: /data/db
+        volume:
+          nocopy: true
+    ports:
+      - target: 27017
+        published: ${MONGO_PUBLISHED_PORT:-27017}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?Missing env MONGO_INITDB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?Missing env MONGO_INITDB_ROOT_PASSWORD}"
