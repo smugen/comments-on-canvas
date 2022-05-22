@@ -1,4 +1,5 @@
 {
-  "out": "tsdoc/",
-  "listInvalidSymbolLinks": true
+  "tsconfig": "src/tsconfig.json",
+  "entryPoints": "src/server.ts",
+  "out": "tsdoc/"
 }

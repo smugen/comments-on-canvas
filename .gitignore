@@ -64,3 +64,5 @@ typings/
 secret/
 dist/
 tsdoc/
+
+!secret/sample.env

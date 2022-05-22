@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "../dist",
     "incremental": true,
     "allowJs": false,
     "checkJs": false,
@@ -37,10 +37,8 @@
     "suppressExcessPropertyErrors": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "paths": {
-      "mongoose": ["./node_modules/@types/mongoose/"]
-    }
+    "paths": {}
   },
-  "include": ["./src/**/*"],
+  "include": ["./**/*"],
   "exclude": ["node_modules"]
 }

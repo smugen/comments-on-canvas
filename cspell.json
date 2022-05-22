@@ -25,7 +25,9 @@
     "typedi",
     "typedoc",
     "tsdoc",
-    "mkdir"
+    "mkdir",
+    "nocopy",
+    "INITDB"
   ],
-  "words": []
+  "words": ["mongodata", "pswd"]
 }
