@@ -26,15 +26,16 @@
     "tsdoc": "typedoc && start tsdoc/index.html",
     "cspell": "cspell **/*",
     "lint": "eslint src test ./*.js --ext js,ts",
-    "build": "tsc",
-    "build-clean": "rimraf dist && tsc --incremental false",
-    "test": "concurrently \"npm:lint\" \"npm:build\" && nyc mocha -r source-map-support/register -r reflect-metadata",
+    "build": "tsc -p src",
+    "build-clean": "rimraf dist && tsc -p src --incremental false",
+    "pretest": "concurrently \"npm:lint\" \"npm:build\"",
+    "test": "env-cmd -f secret/.env nyc mocha --parallel -r ts-node/register -r source-map-support/register -r reflect-metadata test/*.ts",
     "coverage": "nyc report -r=html && start coverage/index.html",
     "start": "cross-env-shell \"node $npm_package_bin_server\" || node $npm_package_bin_server",
     "start-local": "env-cmd -f secret/.env npm start",
     "start-inspect": "env-cmd -f secret/.env cross-env-shell \"node --inspect $npm_package_bin_server\"",
-    "watch": "nodemon -e ts,js -w src -w test -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-local\"",
-    "watch-inspect": "nodemon -e ts,js -w src -w test -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-inspect\"",
+    "watch": "nodemon -e ts,js -w src -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-local\"",
+    "watch-inspect": "nodemon -e ts,js -w src -x npx concurrently -r --kill-others-on-fail \"npm:lint\" \"npm run build && npm run start-inspect\"",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -48,6 +49,8 @@
     "winston": "^3.7.2"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.1",
+    "@types/mocha": "^9.1.1",
     "@types/node": "^17.0.35",
     "@types/validator": "^13.7.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
@@ -69,6 +72,7 @@
     "prettier": "^2.6.2",
     "prettier-plugin-import-sort": "^0.0.7",
     "rimraf": "^3.0.2",
+    "ts-node": "^10.8.0",
     "typedoc": "^0.22.15",
     "typescript": "^4.6.4"
   },

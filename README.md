@@ -6,6 +6,18 @@
 
 - Data Models
   - User
+    - email & password Authentication
+    - email verification
+    - password security
+  - Image
+  - CommentMarker (Comment Thread)
+  - CommentPost
+- APIs
+  - User
+  - Me (current signed in user)
+  - Image
+  - CommentMarker
+  - CommentPost
 
 ### Frontend
 
@@ -29,4 +41,7 @@
 - Data Models
   - [Mongoose ODM](https://mongoosejs.com/docs/guide.html)
   - [typegoose](https://typegoose.github.io/typegoose/), never used before, evaluate if the code could be cleaner
+  - Unit tests using [Mocha](https://mochajs.org/) and [Chai](https://www.chaijs.com/)
   - User
+    - Basic email address format validation
+    - Store password using [scrypt](https://en.wikipedia.org/wiki/Scrypt)

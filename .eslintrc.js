@@ -63,12 +63,12 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['*.ts'],
+      files: ['./src/**/*.ts'],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./src/tsconfig.json'],
       },
       rules: {
         indent: 'off',
@@ -163,23 +163,14 @@ module.exports = {
       },
     },
     {
-      files: ['**/*/generated/graphql.ts'],
+      files: ['./test/**/*.ts'],
       parser: '@typescript-eslint/parser',
       plugins: ['@typescript-eslint'],
       extends: ['plugin:@typescript-eslint/recommended', 'prettier'],
       parserOptions: {
-        project: ['./tsconfig.json'],
+        project: ['./test/tsconfig.json'],
       },
-      rules: {
-        indent: 'off',
-        camelcase: 'off',
-        'max-len': 'off',
-        'valid-jsdoc': 'off',
-        'new-cap': ['error', { capIsNew: false }],
-        '@typescript-eslint/no-explicit-any': 'off',
-        '@typescript-eslint/array-type': 'off',
-        '@typescript-eslint/naming-convention': 'off',
-      },
+      rules: {},
     },
   ],
 };
