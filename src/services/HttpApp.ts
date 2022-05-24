@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { resolve } from 'path';
 
 import Router from '@koa/router';
@@ -12,6 +11,7 @@ import { Inject, Service } from 'typedi';
 
 import logger from '../logger';
 import PackageJson from '../types/PackageJson';
+import ApiHandler from './ApiHandler';
 import { NodeEnv } from './AppEnv';
 import MongooseDatabase from './MongooseDatabase';
 
@@ -37,6 +37,8 @@ export default class HttpApp {
   constructor(
     @Inject(() => MongooseDatabase)
     private readonly db: MongooseDatabase,
+    @Inject(() => ApiHandler)
+    private readonly apiHandler: ApiHandler,
   ) {}
 
   private async apiInfo(ctx: Koa.Context) {
@@ -73,6 +75,8 @@ export default class HttpApp {
       .patch('/', bodyParser, apiInfo);
 
     api.use(router.routes()).use(router.allowedMethods());
+    this.apiHandler.register(api);
+
     return mount(API_PATH, api);
   }
 
@@ -86,8 +90,8 @@ export default class HttpApp {
       .use(async (ctx, next) => {
         try {
           await next();
-        } catch (err) {
-          assert(err instanceof Error);
+        } catch (error) {
+          const err = error as Error;
           ctx.status = err.status ??= 500;
           if (err.status >= 500) {
             logger.error('#app error', { err });

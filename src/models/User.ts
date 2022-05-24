@@ -72,6 +72,24 @@ function transformPassword(
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface User extends defaultClasses.Base {}
+
+@modelOptions({
+  schemaOptions: {
+    versionKey: false,
+    toJSON: {
+      virtuals: true,
+      transform: (_, ret) => {
+        delete ret._id;
+        delete ret.password;
+        return ret;
+      },
+    },
+    timestamps: {
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
+})
 export class User extends defaultClasses.TimeStamps {
   /** name for display */
   @prop({ required: true, index: true })

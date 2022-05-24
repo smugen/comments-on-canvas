@@ -16,3 +16,20 @@ Content-Type: application/json
   "uuid": "{{$guid}}",
   "time": "{{$localDatetime iso8601}}"
 }
+
+###
+# @name Me-get
+
+GET http://{{HOST}}{{PREFIX}}/Me
+
+###
+# @name User-post
+
+POST http://{{HOST}}{{PREFIX}}/User
+Content-Type: application/json
+
+{
+  "name": "CY Wang",
+  "username": "cywang@email.com",
+  "password": "123456"
+}
