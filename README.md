@@ -29,7 +29,7 @@
 
 - Project Repo Scaffolding using some boilerplate I used before
   - [Node.js](package.json)
-  - [TypeScript](tsconfig.json)
+  - [TypeScript](./src/tsconfig.json)
 - Development Environment
   - Docker Desktop WSL
   - [Docker Compose](docker-compose.yml) **with [Compose V2](https://docs.docker.com/compose/#compose-v2-and-the-new-docker-compose-command) enabled**
@@ -45,3 +45,5 @@
   - User
     - Basic email address format validation
     - Store password using [scrypt](https://en.wikipedia.org/wiki/Scrypt)
+- API
+  - [Koa.js](https://koajs.com/)

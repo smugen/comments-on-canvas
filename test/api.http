@@ -1,0 +1,18 @@
+@HOST = 127.0.0.1
+@PREFIX = /api
+
+###
+# @name apiInfo-get
+
+GET http://{{HOST}}{{PREFIX}}
+
+###
+# @name apiInfo-post
+
+POST http://{{HOST}}{{PREFIX}}
+Content-Type: application/json
+
+{
+  "uuid": "{{$guid}}",
+  "time": "{{$localDatetime iso8601}}"
+}

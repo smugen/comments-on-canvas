@@ -1,21 +1,32 @@
-import { promises as fsPromises } from 'fs';
+import { readFile } from 'fs/promises';
 
 import { Service } from 'typedi';
 
 import logger from '../logger';
 
-const { readFile } = fsPromises;
+export enum NodeEnv {
+  Development = 'development',
+  Production = 'production',
+}
 
 @Service()
 export default class AppEnv {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   readonly npm_package_name = process.env.npm_package_name;
   readonly LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
+  readonly HTTP_PORT = process.env.HTTP_PORT;
 
   readonly MONGOOSE_DEBUG = !!JSON.parse(process.env.MONGOOSE_DEBUG || 'false');
   readonly MONGOOSE_AUTO_INDEX = !!JSON.parse(
     process.env.MONGOOSE_AUTO_INDEX || 'true',
   );
+
+  readonly httpPort?: number;
+
+  constructor() {
+    const httpPort = parseInt(this.HTTP_PORT ?? '', 10);
+    httpPort >= 0 && httpPort <= 65535 && (this.httpPort = httpPort);
+  }
 
   async discoverMongo(env = process.env): Promise<string> {
     const TAG = 'AppEnv.discoverMongo';

@@ -3,28 +3,17 @@ import { after, before, describe, it } from 'mocha';
 
 import { UserDocument, UserModel } from '../dist/models';
 import MongooseDatabase from '../dist/services/MongooseDatabase';
+import { setupDb, teardownDb } from './db';
 
 describe('models', () => {
   let db: MongooseDatabase;
 
   before(async () => {
-    const { env } = process;
-    expect(env).has.not.property('MONGODB_URL');
-    expect(env).has.property('MONGODB_DATABASE');
-    expect(env).has.property('MONGOOSE_AUTO_INDEX').equals('true');
     expect(db).equals(void 0);
-
-    let MONGODB_DATABASE = env.MONGODB_DATABASE;
-    MONGODB_DATABASE = `test${Date.now()}-${MONGODB_DATABASE}`;
-
-    const conn = await MongooseDatabase.conn({ ...env, MONGODB_DATABASE });
-    db = new MongooseDatabase(conn);
+    db = await setupDb();
   });
 
-  after(async () => {
-    await db.conn.dropDatabase();
-    await db.conn.close();
-  });
+  after(() => teardownDb(db));
 
   describe('User', () => {
     let User: UserModel;
@@ -85,7 +74,7 @@ describe('models', () => {
 
           expect(name).equals('MongoServerError');
           expect(code).equals(11000);
-          expect(keyValue).has.property('username').equals(info.username);
+          expect(keyValue).has.property('username', info.username);
         }
       });
     });
