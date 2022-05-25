@@ -1,14 +1,13 @@
 @HOST = 127.0.0.1
 @PREFIX = /api
+@TOKEN = Bearer {{Me_put.response.body.cyToken}}
 
 ###
-# @name apiInfo-get
-
+# @name apiInfo_get
 GET http://{{HOST}}{{PREFIX}}
 
 ###
-# @name apiInfo-post
-
+# @name apiInfo_post
 POST http://{{HOST}}{{PREFIX}}
 Content-Type: application/json
 
@@ -18,13 +17,25 @@ Content-Type: application/json
 }
 
 ###
-# @name Me-get
-
+# @name Me_get
 GET http://{{HOST}}{{PREFIX}}/Me
 
 ###
-# @name User-post
+# @name Me_put
+PUT http://{{HOST}}{{PREFIX}}/Me
+Content-Type: application/json
 
+{
+  "username": "cywang@email.com",
+  "password": "123456"
+}
+
+###
+# @name Me_del
+DELETE http://{{HOST}}{{PREFIX}}/Me
+
+###
+# @name User_post
 POST http://{{HOST}}{{PREFIX}}/User
 Content-Type: application/json
 

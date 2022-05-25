@@ -10,32 +10,62 @@ import {
 } from '../helpers/apiMiddleware';
 import AddUserInput from '../types/AddUserInput';
 import AddUserOutput from '../types/AddUserOutput';
-import MongooseDatabase from './MongooseDatabase';
+import SignInError from '../types/SignInError';
+import SignInInput from '../types/SignInInput';
+import SignInOutput from '../types/SignInOutput';
+import UserService from './UserService';
 
 @Service()
 export default class ApiHandler {
   private readonly bodyParser = koaBody();
 
   constructor(
-    @Inject(() => MongooseDatabase)
-    private readonly db: MongooseDatabase,
-  ) {
-    this.db;
-  }
+    @Inject(() => UserService)
+    private readonly userService: UserService,
+  ) {}
 
   register(api: Koa) {
     api.use(this.meRouter.routes()).use(this.meRouter.allowedMethods());
     api.use(this.userRouter.routes()).use(this.userRouter.allowedMethods());
   }
 
+  /** `/Me` */
   private readonly meRouter = new Router()
     .prefix('/Me')
-    .get('/', this.getMe.bind(this));
+    .get('/', this.getMe.bind(this))
+    .put(
+      '/',
+      this.bodyParser,
+      inputValidator(SignInInput),
+      this.putMe.bind(this),
+    )
+    .del('/', this.delMe.bind(this));
 
   private async getMe(ctx: Koa.Context) {
-    ctx.body = { hello: 'John' };
+    const user = await this.userService.authenticate(ctx);
+    if (!user) {
+      ctx.throw(401);
+    }
+    ctx.body = { user };
   }
 
+  private async putMe(ctx: ApiContext<SignInInput, SignInOutput>) {
+    try {
+      ctx.body = await this.userService.signIn(ctx.state.input, ctx);
+    } catch (error) {
+      if (!(error instanceof SignInError)) {
+        throw error;
+      }
+      ctx.throw(401, error);
+    }
+  }
+
+  private delMe(ctx: Koa.Context) {
+    this.userService.signOut(ctx);
+    ctx.status = 205;
+  }
+
+  /** `/User` */
   private readonly userRouter = new Router()
     .prefix('/User')
     .post(
@@ -47,16 +77,7 @@ export default class ApiHandler {
     );
 
   private async addUser(ctx: ApiContext<AddUserInput, AddUserOutput>) {
-    const { User } = this.db.models;
-    const { input } = ctx.state;
-    const { name, username, password } = Array.isArray(input)
-      ? input[0]
-      : input;
-
-    const user = await (
-      await new User({ name, username }).setPassword(password)
-    ).save();
-
-    ctx.body = { user, password };
+    ctx.body = await this.userService.addUser(ctx.state.input);
+    ctx.status = 201;
   }
 }

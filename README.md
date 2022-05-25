@@ -47,3 +47,10 @@
     - Store password using [scrypt](https://en.wikipedia.org/wiki/Scrypt)
 - API
   - [Koa.js](https://koajs.com/)
+  - API Tests using [node-fetch](https://github.com/node-fetch/node-fetch/tree/2.x#readme)
+  - User
+    - addUser for Registration
+  - Me
+    - getMe for session validation
+    - putMe for sign in
+    - delMe for sign out

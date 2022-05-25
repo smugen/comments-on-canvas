@@ -9,7 +9,8 @@ export type ApiContext<Input, Output> = Koa.ParameterizedContext<
 >;
 
 interface ValidatedInput<T> extends Koa.DefaultState {
-  input: T | T[];
+  input: T;
+  inputs: T[];
 }
 
 export function inputValidator<T extends object>(
@@ -17,13 +18,22 @@ export function inputValidator<T extends object>(
 ): Koa.Middleware<ValidatedInput<T>> {
   return async (ctx, next) => {
     try {
-      ctx.state.input = await transformAndValidate(
+      const validated = await transformAndValidate(
         classType,
         ctx.request.body,
         {
           transformer: { excludeExtraneousValues: true },
         },
       );
+
+      const { state } = ctx;
+      if (Array.isArray(validated)) {
+        state.input = validated[0];
+        state.inputs = validated;
+      } else {
+        state.input = validated;
+        state.inputs = [validated];
+      }
     } catch (validationErrors) {
       if (
         !(Array.isArray(validationErrors)
