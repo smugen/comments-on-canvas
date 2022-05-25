@@ -3,11 +3,12 @@ import mongoose, { Connection } from 'mongoose';
 import Container, { Service } from 'typedi';
 
 import logger from '../logger';
-import { User, UserModel } from '../models';
+import { Image, ImageModel, User, UserModel } from '../models';
 import AppEnv from './AppEnv';
 
 interface Models {
   User: UserModel;
+  Image: ImageModel;
 }
 
 @Service()
@@ -60,12 +61,14 @@ export default class MongooseDatabase {
   readonly models: Models;
 
   readonly UserModel: UserModel;
+  readonly ImageModel: ImageModel;
 
   constructor(conn?: Connection) {
     this.conn = conn ?? MongooseDatabase.conn();
     const models = (this.models = this._models());
 
     this.UserModel = models.User;
+    this.ImageModel = models.Image;
   }
 
   private _models(): Models {
@@ -73,6 +76,7 @@ export default class MongooseDatabase {
 
     return {
       User: getModelForClass(User, options),
+      Image: getModelForClass(Image, options),
     };
   }
 }

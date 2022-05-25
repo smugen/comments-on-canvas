@@ -7,12 +7,14 @@ import koaBody from 'koa-body';
 import koaFavicon from 'koa-favicon';
 import koaLogger from 'koa-logger';
 import mount from 'koa-mount';
+import koaStatic from 'koa-static';
 import { Inject, Service } from 'typedi';
 
 import logger from '../logger';
 import PackageJson from '../types/PackageJson';
 import ApiHandler from './ApiHandler';
 import { NodeEnv } from './AppEnv';
+import ImageService from './ImageService';
 import MongooseDatabase from './MongooseDatabase';
 
 declare global {
@@ -22,6 +24,7 @@ declare global {
 }
 
 const API_PATH = '/api';
+export const SERVE_UPLOAD_PATH = '/uploads';
 
 @Service()
 export default class HttpApp {
@@ -33,6 +36,11 @@ export default class HttpApp {
     require('../../package.json'),
     { transformer: { excludeExtraneousValues: true } },
   ) as PackageJson;
+
+  private readonly serveUploads = mount(
+    SERVE_UPLOAD_PATH,
+    koaStatic(ImageService.uploadPath),
+  );
 
   constructor(
     @Inject(() => MongooseDatabase)
@@ -104,6 +112,7 @@ export default class HttpApp {
       })
       .use(koaFavicon(resolve(__dirname, '../../public/favicon.png')))
       .use(koaLogger(str => logger.http(str, { module: 'app' })))
+      .use(this.serveUploads)
       .use(this.api())
       .use(ctx => ctx.throw(404));
 

@@ -1,5 +1,8 @@
+import assert from 'assert';
+import { readFile } from 'fs/promises';
 import { Server } from 'http';
 import { AddressInfo } from 'net';
+import { resolve } from 'path';
 import { URL } from 'url';
 
 import { expect } from 'chai';
@@ -119,9 +122,10 @@ describe('apis', () => {
     });
   });
 
+  let token: string;
+
   describe('/api/Me', () => {
     let endpoint: string;
-    let token: string;
 
     before(() => {
       endpoint = `${prefix(address.port)}/Me`;
@@ -146,6 +150,7 @@ describe('apis', () => {
       const url = new URL(endpoint);
       let res = await fetch(url.href, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password: 'bad-pass' }),
       });
       expect(res.ok).is.false;
@@ -153,6 +158,7 @@ describe('apis', () => {
 
       res = await fetch(url.href, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'bad-username', password }),
       });
       expect(res.ok).is.false;
@@ -164,6 +170,7 @@ describe('apis', () => {
       const url = new URL(endpoint);
       const res = await fetch(url.href, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
       expect(res.ok).is.true;
@@ -189,6 +196,111 @@ describe('apis', () => {
 
       const setCookie = res.headers.raw()['set-cookie'];
       expect(setCookie).to.match(/^CYToken=;/);
+    });
+  });
+
+  let imageId: string;
+
+  describe('/api/Image', () => {
+    let endpoint: string;
+    const extension = 'png';
+    const position = { x: 100, y: 50 };
+
+    before(() => {
+      endpoint = `${prefix(address.port)}/Image`;
+    });
+
+    it('POST should create new image', async () => {
+      const url = new URL(endpoint);
+      const res = await fetch(url.href, {
+        method: 'POST',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extension, ...position }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(201);
+
+      const body = await res.json();
+      expect(body).has.property('image');
+
+      const { image } = body;
+      expect(image).has.property('extension', extension);
+      expect(image).has.property('x', position.x);
+      expect(image).has.property('y', position.y);
+      expect(image).has.property('id').is.a('string');
+      imageId = image.id;
+    });
+
+    it('GET should return one image in list', async () => {
+      const url = new URL(endpoint);
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('images');
+      expect(body.images).to.have.lengthOf(1);
+    });
+  });
+
+  describe('/api/Image/:id', () => {
+    let endpoint: (id: string) => string;
+
+    before(() => {
+      endpoint = id => `${prefix(address.port)}/Image/${id}`;
+    });
+
+    it('GET should return 200 with image', async () => {
+      const url = new URL(endpoint(imageId));
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('image');
+    });
+
+    it('GET should return 404 with invalid id', async () => {
+      const url = new URL(endpoint('invalid-id'));
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.false;
+      expect(res.status).equals(404);
+    });
+  });
+
+  describe('/api/Image/:id/blob', () => {
+    let endpoint: (id: string) => string;
+    let file: Buffer;
+    let redirectPath: string;
+
+    before(async () => {
+      endpoint = id => `${prefix(address.port)}/Image/${id}/blob`;
+      file = await readFile(resolve(__dirname, './ts-logo-128.png'));
+    });
+
+    it('PUT should redirect to blob', async () => {
+      const url = new URL(endpoint(imageId));
+      const res = await fetch(url.href, {
+        method: 'PUT',
+        headers: { ...bearer(token), 'Content-length': `${file.length}` },
+        body: file,
+        redirect: 'manual',
+      });
+      expect(res.status).equals(302);
+
+      const location = res.headers.get('Location');
+      assert(typeof location === 'string');
+      redirectPath = location;
+    });
+
+    it('blob should has same content', async () => {
+      const url = new URL(redirectPath);
+      const res = await fetch(url);
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.buffer();
+      expect(body.equals(file)).is.true;
     });
   });
 });

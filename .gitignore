@@ -64,5 +64,6 @@ typings/
 secret/
 dist/
 tsdoc/
+upload/
 
 !secret/sample.env

@@ -1,7 +1,10 @@
+import assert from 'assert';
+
 import { expect } from 'chai';
 import { after, before, describe, it } from 'mocha';
+import { ObjectId } from 'mongodb';
 
-import { UserDocument, UserModel } from '../dist/models';
+import { ImageModel, UserDocument, UserModel } from '../dist/models';
 import MongooseDatabase from '../dist/services/MongooseDatabase';
 import { setupDb, teardownDb } from './db';
 
@@ -95,6 +98,51 @@ describe('models', () => {
         expect(user).is.not.null;
         expect(user?.id).equals(userId);
       });
+    });
+  });
+
+  describe('Image', () => {
+    let Image: ImageModel;
+    let userId: ObjectId;
+
+    before(async () => {
+      Image = db.models.Image;
+
+      const user = await db.models.User.findOne();
+      assert(user);
+      userId = user._id;
+    });
+
+    it('should create a new image', async () => {
+      const image = await Image.create({ userId, extension: 'png' });
+      expect(image.userId.equals(userId)).is.true;
+      expect(image.extension).equals('png');
+      expect(image.x).equals(0);
+      expect(image.y).equals(0);
+    });
+
+    it('should reject nonexistent userId', async () => {
+      try {
+        await Image.create({
+          userId: new ObjectId(),
+          extension: 'png',
+        });
+      } catch (err) {
+        const { name } = err as Error;
+        expect(name).equals('ValidationError');
+      }
+    });
+
+    it('should reject invalid extension', async () => {
+      try {
+        await Image.create({
+          userId,
+          extension: 'txt',
+        });
+      } catch (err) {
+        const { name } = err as Error;
+        expect(name).equals('ValidationError');
+      }
     });
   });
 });

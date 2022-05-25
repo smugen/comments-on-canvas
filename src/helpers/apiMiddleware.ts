@@ -1,30 +1,49 @@
 import { ClassType, transformAndValidate } from 'class-transformer-validator';
 import { ValidationError } from 'class-validator';
 import Koa from 'koa';
+import Container from 'typedi';
 
-export type ApiContext<Input, Output> = Koa.ParameterizedContext<
-  ValidatedInput<Input>,
+import { UserDocument } from '../models';
+import UserService from '../services/UserService';
+
+export type ApiContext<
+  Input = unknown,
+  Output = unknown,
+> = Koa.ParameterizedContext<
+  MiddlewareState<Input>,
   Koa.DefaultContext,
   Output
 >;
 
-interface ValidatedInput<T> extends Koa.DefaultState {
-  input: T;
-  inputs: T[];
+interface MiddlewareState<T> extends Koa.DefaultState {
+  user?: UserDocument;
+  input?: T;
+  inputs?: T[];
+}
+
+export async function authenticate(ctx: ApiContext, next: Koa.Next) {
+  const userService = Container.get(UserService);
+  ctx.state.user = await userService.authenticate(ctx);
+  return next();
 }
 
 export function inputValidator<T extends object>(
   classType: ClassType<T>,
-): Koa.Middleware<ValidatedInput<T>> {
+  statusCode = 400,
+): Koa.Middleware<MiddlewareState<T>> {
   return async (ctx, next) => {
+    const {
+      // path,
+      request: { body },
+      params,
+    } = ctx;
+    const input = { ...(body ?? {}), ...(params ?? {}) };
+    // logger.debug('inputValidator', { path, body, params, input });
+
     try {
-      const validated = await transformAndValidate(
-        classType,
-        ctx.request.body,
-        {
-          transformer: { excludeExtraneousValues: true },
-        },
-      );
+      const validated = await transformAndValidate(classType, input, {
+        transformer: { excludeExtraneousValues: true },
+      });
 
       const { state } = ctx;
       if (Array.isArray(validated)) {
@@ -43,7 +62,7 @@ export function inputValidator<T extends object>(
         throw validationErrors;
       }
 
-      ctx.throw(400, { validationErrors });
+      ctx.throw(statusCode, { validationErrors });
     }
 
     try {
@@ -54,7 +73,7 @@ export function inputValidator<T extends object>(
         throw validationError;
       }
 
-      ctx.throw(400, { validationError });
+      ctx.throw(statusCode, { validationError });
     }
   };
 }

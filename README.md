@@ -54,3 +54,8 @@
     - getMe for session validation
     - putMe for sign in
     - delMe for sign out
+  - Image
+    - listImage for listing all images
+    - addImage for adding an image metadata
+    - getImage for getting an image metadata
+    - putImage for uploading an image than redirect to the image URL

@@ -5,14 +5,22 @@ import { Inject, Service } from 'typedi';
 
 import {
   ApiContext,
+  authenticate,
   inputValidator,
   mongoServerError11000ToHttp409,
 } from '../helpers/apiMiddleware';
+import AddImageInput from '../types/AddImageInput';
+import AddImageOutput from '../types/AddImageOutput';
 import AddUserInput from '../types/AddUserInput';
 import AddUserOutput from '../types/AddUserOutput';
+import GetImageInput from '../types/GetImageInput';
+import GetImageOutput from '../types/GetImageOutput';
+import ListImageOutput from '../types/ListImageOutput';
 import SignInError from '../types/SignInError';
 import SignInInput from '../types/SignInInput';
 import SignInOutput from '../types/SignInOutput';
+import { SERVE_UPLOAD_PATH } from './HttpApp';
+import ImageService from './ImageService';
 import UserService from './UserService';
 
 @Service()
@@ -22,17 +30,20 @@ export default class ApiHandler {
   constructor(
     @Inject(() => UserService)
     private readonly userService: UserService,
+    @Inject(() => ImageService)
+    private readonly imageService: ImageService,
   ) {}
 
   register(api: Koa) {
     api.use(this.meRouter.routes()).use(this.meRouter.allowedMethods());
     api.use(this.userRouter.routes()).use(this.userRouter.allowedMethods());
+    api.use(this.imageRouter.routes()).use(this.imageRouter.allowedMethods());
   }
 
   /** `/Me` */
   private readonly meRouter = new Router()
     .prefix('/Me')
-    .get('/', this.getMe.bind(this))
+    .get('/', authenticate, this.getMe.bind(this))
     .put(
       '/',
       this.bodyParser,
@@ -41,17 +52,18 @@ export default class ApiHandler {
     )
     .del('/', this.delMe.bind(this));
 
-  private async getMe(ctx: Koa.Context) {
-    const user = await this.userService.authenticate(ctx);
-    if (!user) {
-      ctx.throw(401);
-    }
+  private async getMe(ctx: ApiContext) {
+    const { user } = ctx.state;
+    ctx.assert(user, 401);
     ctx.body = { user };
   }
 
   private async putMe(ctx: ApiContext<SignInInput, SignInOutput>) {
+    const { input } = ctx.state;
+    ctx.assert(input, 400);
+
     try {
-      ctx.body = await this.userService.signIn(ctx.state.input, ctx);
+      ctx.body = await this.userService.signIn(input, ctx);
     } catch (error) {
       if (!(error instanceof SignInError)) {
         throw error;
@@ -60,7 +72,7 @@ export default class ApiHandler {
     }
   }
 
-  private delMe(ctx: Koa.Context) {
+  private delMe(ctx: ApiContext) {
     this.userService.signOut(ctx);
     ctx.status = 205;
   }
@@ -77,7 +89,69 @@ export default class ApiHandler {
     );
 
   private async addUser(ctx: ApiContext<AddUserInput, AddUserOutput>) {
-    ctx.body = await this.userService.addUser(ctx.state.input);
+    const { input } = ctx.state;
+    ctx.assert(input, 400);
+    ctx.body = await this.userService.addUser(input);
     ctx.status = 201;
+  }
+
+  /** `/Image` */
+  private readonly imageRouter = new Router()
+    .prefix('/Image')
+    .get('/', authenticate, this.listImage.bind(this))
+    .post(
+      '/',
+      authenticate,
+      this.bodyParser,
+      inputValidator(AddImageInput),
+      this.addImage.bind(this),
+    )
+    .get(
+      '/:id',
+      authenticate,
+      inputValidator(GetImageInput, 404),
+      this.getImage.bind(this),
+    )
+    .put(
+      '/:id/blob',
+      authenticate,
+      inputValidator(GetImageInput, 404),
+      this.putImage.bind(this),
+    );
+
+  private async listImage(ctx: ApiContext<void, ListImageOutput>) {
+    const { user } = ctx.state;
+    ctx.assert(user, 401);
+    ctx.body = await this.imageService.listImage();
+  }
+
+  private async addImage(ctx: ApiContext<AddImageInput, AddImageOutput>) {
+    const { user } = ctx.state;
+    ctx.assert(user, 401);
+    const { input } = ctx.state;
+    ctx.assert(input, 400);
+    ctx.body = await this.imageService.addImage(input, user);
+    ctx.status = 201;
+  }
+
+  private async getImage(ctx: ApiContext<GetImageInput, GetImageOutput>) {
+    const { user } = ctx.state;
+    ctx.assert(user, 401);
+    const { input } = ctx.state;
+    ctx.assert(input, 404);
+    const image = await this.imageService.getImage(input);
+    ctx.assert(image, 404);
+    ctx.body = { image };
+  }
+
+  private async putImage(ctx: ApiContext<GetImageInput>) {
+    const { user } = ctx.state;
+    ctx.assert(user, 401);
+    const { input } = ctx.state;
+    ctx.assert(input, 404);
+    const image = await this.imageService.getImage(input);
+    ctx.assert(image, 404);
+    const name = await this.imageService.putImageBlob(image, ctx);
+    ctx.redirect([SERVE_UPLOAD_PATH, name].join('/'));
   }
 }

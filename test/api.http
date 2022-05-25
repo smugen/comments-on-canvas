@@ -2,6 +2,8 @@
 @PREFIX = /api
 @TOKEN = Bearer {{Me_put.response.body.cyToken}}
 
+@imageId = {{Image_post.response.body.image.id}}
+
 ###
 # @name apiInfo_get
 GET http://{{HOST}}{{PREFIX}}
@@ -44,3 +46,26 @@ Content-Type: application/json
   "username": "cywang@email.com",
   "password": "123456"
 }
+
+###
+# @name Image_get
+GET http://{{HOST}}{{PREFIX}}/Image
+
+###
+# @name Image_post
+POST http://{{HOST}}{{PREFIX}}/Image
+Content-Type: application/json
+
+{
+  "extension": "png"
+}
+
+###
+# @name Image_getById
+GET http://{{HOST}}{{PREFIX}}/Image/{{imageId}}
+
+###
+# @name Image_putById_blob
+PUT http://{{HOST}}{{PREFIX}}/Image/{{imageId}}/blob
+
+< ./ts-logo-128.png
