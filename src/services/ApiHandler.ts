@@ -19,6 +19,8 @@ import ListImageOutput from '../types/ListImageOutput';
 import SignInError from '../types/SignInError';
 import SignInInput from '../types/SignInInput';
 import SignInOutput from '../types/SignInOutput';
+import UpdateImageInput from '../types/UpdateImageInput';
+import UpdateImageOutput from '../types/UpdateImageOutput';
 import { SERVE_UPLOAD_PATH } from './HttpApp';
 import ImageService from './ImageService';
 import UserService from './UserService';
@@ -43,7 +45,7 @@ export default class ApiHandler {
   /** `/Me` */
   private readonly meRouter = new Router()
     .prefix('/Me')
-    .get('/', authenticate, this.getMe.bind(this))
+    .get('/', authenticate(), this.getMe.bind(this))
     .put(
       '/',
       this.bodyParser,
@@ -53,9 +55,7 @@ export default class ApiHandler {
     .del('/', this.delMe.bind(this));
 
   private async getMe(ctx: ApiContext) {
-    const { user } = ctx.state;
-    ctx.assert(user, 401);
-    ctx.body = { user };
+    ctx.body = { user: ctx.state.user };
   }
 
   private async putMe(ctx: ApiContext<SignInInput, SignInOutput>) {
@@ -98,30 +98,35 @@ export default class ApiHandler {
   /** `/Image` */
   private readonly imageRouter = new Router()
     .prefix('/Image')
-    .get('/', authenticate, this.listImage.bind(this))
+    .get('/', authenticate(), this.listImage.bind(this))
     .post(
       '/',
-      authenticate,
+      authenticate(),
       this.bodyParser,
       inputValidator(AddImageInput),
       this.addImage.bind(this),
     )
     .get(
       '/:id',
-      authenticate,
+      authenticate(),
       inputValidator(GetImageInput, 404),
       this.getImage.bind(this),
     )
+    .patch(
+      '/:id',
+      authenticate(),
+      this.bodyParser,
+      inputValidator(UpdateImageInput),
+      this.updateImage.bind(this),
+    )
     .put(
       '/:id/blob',
-      authenticate,
+      authenticate(),
       inputValidator(GetImageInput, 404),
       this.putImage.bind(this),
     );
 
   private async listImage(ctx: ApiContext<void, ListImageOutput>) {
-    const { user } = ctx.state;
-    ctx.assert(user, 401);
     ctx.body = await this.imageService.listImage();
   }
 
@@ -135,13 +140,21 @@ export default class ApiHandler {
   }
 
   private async getImage(ctx: ApiContext<GetImageInput, GetImageOutput>) {
-    const { user } = ctx.state;
-    ctx.assert(user, 401);
     const { input } = ctx.state;
     ctx.assert(input, 404);
     const image = await this.imageService.getImage(input);
     ctx.assert(image, 404);
     ctx.body = { image };
+  }
+
+  private async updateImage(
+    ctx: ApiContext<UpdateImageInput, UpdateImageOutput>,
+  ) {
+    const { input } = ctx.state;
+    ctx.assert(input, 400);
+    const image = await this.imageService.getImage(input);
+    ctx.assert(image, 404);
+    ctx.body = await this.imageService.updateImage(input, image);
   }
 
   private async putImage(ctx: ApiContext<GetImageInput>) {
@@ -151,6 +164,7 @@ export default class ApiHandler {
     ctx.assert(input, 404);
     const image = await this.imageService.getImage(input);
     ctx.assert(image, 404);
+    ctx.assert(image.userId.equals(user._id), 403);
     const name = await this.imageService.putImageBlob(image, ctx);
     ctx.redirect([SERVE_UPLOAD_PATH, name].join('/'));
   }

@@ -65,6 +65,16 @@ Content-Type: application/json
 GET http://{{HOST}}{{PREFIX}}/Image/{{imageId}}
 
 ###
+# @name Image_patchById
+PATCH http://{{HOST}}{{PREFIX}}/Image/{{imageId}}
+Content-Type: application/json
+
+{
+  "x": {{$randomInt 0 300}},
+  "y": {{$randomInt 0 100}}
+}
+
+###
 # @name Image_putById_blob
 PUT http://{{HOST}}{{PREFIX}}/Image/{{imageId}}/blob
 

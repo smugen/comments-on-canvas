@@ -58,4 +58,5 @@
     - listImage for listing all images
     - addImage for adding an image metadata
     - getImage for getting an image metadata
+    - updateImage for updating an image metadata
     - putImage for uploading an image than redirect to the image URL

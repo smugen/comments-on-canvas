@@ -15,16 +15,22 @@ export type ApiContext<
   Output
 >;
 
-interface MiddlewareState<T> extends Koa.DefaultState {
+interface MiddlewareState<T = unknown> extends Koa.DefaultState {
   user?: UserDocument;
   input?: T;
   inputs?: T[];
 }
 
-export async function authenticate(ctx: ApiContext, next: Koa.Next) {
-  const userService = Container.get(UserService);
-  ctx.state.user = await userService.authenticate(ctx);
-  return next();
+export function authenticate(throw401 = true): Koa.Middleware<MiddlewareState> {
+  return async (ctx, next) => {
+    const userService = Container.get(UserService);
+
+    if (!(ctx.state.user = await userService.authenticate(ctx)) && throw401) {
+      ctx.throw(401);
+    }
+
+    return next();
+  };
 }
 
 export function inputValidator<T extends object>(

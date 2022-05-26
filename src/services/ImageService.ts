@@ -9,6 +9,8 @@ import AddImageInput from '../types/AddImageInput';
 import AddImageOutput from '../types/AddImageOutput';
 import GetImageInput from '../types/GetImageInput';
 import ListImageOutput from '../types/ListImageOutput';
+import UpdateImageInput from '../types/UpdateImageInput';
+import UpdateImageOutput from '../types/UpdateImageOutput';
 import MongooseDatabase from './MongooseDatabase';
 
 @Service()
@@ -40,6 +42,21 @@ export default class ImageService {
 
   getImage({ id }: GetImageInput): Promise<ImageDocument | null> {
     return this.db.ImageModel.findById(id).exec();
+  }
+
+  async updateImage(
+    { x, y }: UpdateImageInput,
+    image: ImageDocument,
+  ): Promise<UpdateImageOutput> {
+    if (typeof x === 'number') {
+      image.x = x;
+    }
+    if (typeof y === 'number') {
+      image.y = y;
+    }
+
+    await image.save();
+    return { image };
   }
 
   putImageBlob({ id, extension }: ImageDocument, ctx: Koa.Context) {

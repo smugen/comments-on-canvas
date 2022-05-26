@@ -266,6 +266,25 @@ describe('apis', () => {
       expect(res.ok).is.false;
       expect(res.status).equals(404);
     });
+
+    it('PATCH should return 200 with updated image', async () => {
+      const [x, y] = [randomInt(300), randomInt(100)];
+      const url = new URL(endpoint(imageId));
+      const res = await fetch(url.href, {
+        method: 'PATCH',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('image');
+
+      const { image } = body;
+      expect(image).has.property('x', x);
+      expect(image).has.property('y', y);
+    });
   });
 
   describe('/api/Image/:id/blob', () => {
@@ -311,4 +330,8 @@ function prefix(port: number) {
 
 function bearer(token: string) {
   return { Authorization: `Bearer ${token}` };
+}
+
+function randomInt(max: number) {
+  return Math.floor(Math.random() * max);
 }
