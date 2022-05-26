@@ -10,18 +10,21 @@
     - email verification
     - password security
   - Image
-  - CommentMarker (Comment Thread)
-  - CommentPost
+  - Marker (Comment Thread)
+  - Comment
 - APIs
   - User
   - Me (current signed in user)
   - Image
-  - CommentMarker
-  - CommentPost
-
-### Frontend
+  - Marker
+  - Comment
+- Dockerize
 
 ### Realtime
+
+- API call triggers server broadcast events to all connected clients
+
+### Frontend
 
 ## System Design
 
@@ -47,16 +50,32 @@
     - Store password using [scrypt](https://en.wikipedia.org/wiki/Scrypt)
 - API
   - [Koa.js](https://koajs.com/)
+  - Manual test using VSCode extension [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) with [test/api.http](test/api.http) (instead of Postman)
   - API Tests using [node-fetch](https://github.com/node-fetch/node-fetch/tree/2.x#readme)
   - User
-    - addUser for Registration
+    - `addUser` for Registration
   - Me
-    - getMe for session validation
-    - putMe for sign in
-    - delMe for sign out
+    - `getMe` for session validation
+    - `putMe` for sign in
+    - `delMe` for sign out
   - Image
-    - listImage for listing all images
-    - addImage for adding an image metadata
-    - getImage for getting an image metadata
-    - updateImage for updating an image metadata
-    - putImage for uploading an image than redirect to the image URL
+    - `listImage` for listing all images
+    - `addImage` for adding an image metadata
+    - `getImage` for getting an image metadata
+    - `updateImage` for updating an image metadata (move image position)
+    - `putImage` for uploading an image than redirect to the image URL
+  - Marker
+    - `listMarker` for listing all markers
+    - `addMarker` for adding a marker
+    - `getMarker` for getting a marker
+    - `updateMarker` for updating a marker (move marker position)
+    - `delMarker` for deleting a marker (resolve thread)
+    - Comment
+      - `listComment` for listing comments of a marker (in a thread)
+      - `addComment` for adding a comment to a marker (to a thread)
+      - `delComment` for deleting a comment from a marker (from a thread)
+
+### Iteration 2
+
+- Dockerfile
+- Realtime

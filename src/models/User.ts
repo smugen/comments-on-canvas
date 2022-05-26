@@ -8,6 +8,7 @@ import {
   DocumentType,
   ReturnModelType,
   defaultClasses,
+  index,
   modelOptions,
   prop,
 } from '@typegoose/typegoose';
@@ -90,6 +91,8 @@ export interface User extends defaultClasses.Base {}
     },
   },
 })
+@index({ createdAt: 1 })
+@index({ updatedAt: 1 })
 export class User extends defaultClasses.TimeStamps {
   /** name for display */
   @prop({ required: true, index: true })

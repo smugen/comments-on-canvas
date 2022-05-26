@@ -4,20 +4,19 @@ import {
   defaultClasses,
   index,
   modelOptions,
+  mongoose,
+  pre,
   prop,
 } from '@typegoose/typegoose';
-import mongoose from 'mongoose';
 import Container from 'typedi';
 
 import MongooseDatabase from '../services/MongooseDatabase';
 
-export type ImageDocument = DocumentType<Image>;
-export type ImageModel = ReturnModelType<typeof Image>;
-
-const EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+export type MarkerDocument = DocumentType<Marker>;
+export type MarkerModel = ReturnModelType<typeof Marker>;
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface Image extends defaultClasses.Base {}
+export interface Marker extends defaultClasses.Base {}
 
 @modelOptions({
   schemaOptions: {
@@ -37,29 +36,27 @@ export interface Image extends defaultClasses.Base {}
 })
 @index({ createdAt: 1 })
 @index({ updatedAt: 1 })
-export class Image extends defaultClasses.TimeStamps {
-  /** uploader */
+@pre<Marker>('remove', removeComments, { document: true })
+export class Marker extends defaultClasses.TimeStamps {
+  /** placed on */
   @prop({
-    required: true,
+    required: false,
     index: true,
-    validate: async function (this: ImageDocument, userId: typeof this.userId) {
+    sparse: true,
+    validate: async function (
+      this: MarkerDocument,
+      imageId: typeof this.imageId,
+    ) {
       const db = Container.get(MongooseDatabase);
-      return !!(await db.UserModel.exists({ _id: userId }));
+      return !!(await db.ImageModel.exists({ _id: imageId }));
     },
   })
-  userId!: mongoose.Types.ObjectId;
-
-  /** file extension */
-  @prop({
-    required: true,
-    index: true,
-    enum: EXTENSIONS,
-  })
-  extension!: string;
+  imageId?: mongoose.Types.ObjectId;
 
   @prop({
     required: true,
     default: 0,
+    min: 0,
     validate: Number.isInteger,
   })
   x!: number;
@@ -67,7 +64,15 @@ export class Image extends defaultClasses.TimeStamps {
   @prop({
     required: true,
     default: 0,
+    min: 0,
     validate: Number.isInteger,
   })
   y!: number;
+}
+
+/** @this MarkerDocument */
+async function removeComments(this: MarkerDocument) {
+  const db = Container.get(MongooseDatabase);
+  const comments = await db.CommentModel.find({ markerId: this._id });
+  await Promise.all(comments.map(c => c.remove()));
 }

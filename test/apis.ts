@@ -322,6 +322,193 @@ describe('apis', () => {
       expect(body.equals(file)).is.true;
     });
   });
+
+  let markerId1: string;
+  let markerId2: string;
+
+  describe('/api/Marker', () => {
+    let endpoint: string;
+    const text = 'Hello World';
+
+    before(() => {
+      endpoint = `${prefix(address.port)}/Marker`;
+    });
+
+    it('POST should create new marker on canvas', async () => {
+      const url = new URL(endpoint);
+      const res = await fetch(url.href, {
+        method: 'POST',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(201);
+
+      const body = await res.json();
+      expect(body).has.property('marker');
+      expect(body).has.property('comment');
+
+      const { marker, comment } = body;
+      expect(marker).does.not.have.property('imageId');
+      expect(marker).has.property('x', 0);
+      expect(marker).has.property('y', 0);
+      expect(comment).has.property('markerId', marker.id);
+      expect(comment).has.property('text', text);
+
+      markerId1 = marker.id;
+    });
+
+    it('POST should create new marker on image', async () => {
+      const url = new URL(endpoint);
+      const res = await fetch(url.href, {
+        method: 'POST',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, imageId }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(201);
+
+      const body = await res.json();
+      expect(body).has.property('marker');
+      expect(body).has.property('comment');
+
+      const { marker, comment } = body;
+      expect(marker).has.property('imageId', imageId);
+      expect(marker).has.property('x', 0);
+      expect(marker).has.property('y', 0);
+      expect(comment).has.property('markerId', marker.id);
+      expect(comment).has.property('text', text);
+
+      markerId2 = marker.id;
+    });
+
+    it('GET should return 2 markers in list', async () => {
+      const url = new URL(endpoint);
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('markers');
+      expect(body.markers).to.have.lengthOf(2);
+    });
+  });
+
+  describe('/api/Marker/:markerId', () => {
+    let endpoint: (markerId: string) => string;
+
+    before(() => {
+      endpoint = markerId => `${prefix(address.port)}/Marker/${markerId}`;
+    });
+
+    it('GET should return 200 with marker', async () => {
+      const url = new URL(endpoint(markerId1));
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('marker');
+    });
+
+    it('GET should return 404 with invalid id', async () => {
+      const url = new URL(endpoint('invalid-id'));
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.false;
+      expect(res.status).equals(404);
+    });
+
+    it('PATCH should return 200 with updated marker', async () => {
+      const [x, y] = [randomInt(300), randomInt(100)];
+      const url = new URL(endpoint(markerId1));
+      const res = await fetch(url.href, {
+        method: 'PATCH',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ x, y }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('marker');
+
+      const { marker } = body;
+      expect(marker).has.property('x', x);
+      expect(marker).has.property('y', y);
+    });
+
+    it('DELETE should return 204', async () => {
+      const url = new URL(endpoint(markerId1));
+      const res = await fetch(url.href, {
+        method: 'DELETE',
+        headers: bearer(token),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(204);
+    });
+  });
+
+  let commentId: string;
+
+  describe('/api/Marker/:markerId/Comment', () => {
+    let endpoint: (markerId: string) => string;
+    const text = 'Hello World';
+
+    before(() => {
+      endpoint = markerId =>
+        `${prefix(address.port)}/Marker/${markerId}/Comment`;
+    });
+
+    it('POST should create new comment', async () => {
+      const url = new URL(endpoint(markerId2));
+      const res = await fetch(url.href, {
+        method: 'POST',
+        headers: { ...bearer(token), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(201);
+
+      const body = await res.json();
+      expect(body).has.property('comment');
+
+      const { comment } = body;
+      expect(comment).has.property('markerId', markerId2);
+      expect(comment).has.property('text', text);
+
+      commentId = comment.id;
+    });
+
+    it('GET should return 2 comments in list', async () => {
+      const url = new URL(endpoint(markerId2));
+      const res = await fetch(url.href, { headers: bearer(token) });
+      expect(res.ok).is.true;
+      expect(res.status).equals(200);
+
+      const body = await res.json();
+      expect(body).has.property('comments');
+      expect(body.comments).to.have.lengthOf(2);
+    });
+  });
+
+  describe('/api/Marker/:markerId/Comment/:commentId', () => {
+    let endpoint: (markerId: string, commentId: string) => string;
+
+    before(() => {
+      endpoint = (markerId, commentId) =>
+        `${prefix(address.port)}/Marker/${markerId}/Comment/${commentId}`;
+    });
+
+    it('DELETE should return 204', async () => {
+      const url = new URL(endpoint(markerId2, commentId));
+      const res = await fetch(url.href, {
+        method: 'DELETE',
+        headers: bearer(token),
+      });
+      expect(res.ok).is.true;
+      expect(res.status).equals(204);
+    });
+  });
 });
 
 function prefix(port: number) {

@@ -3,6 +3,8 @@
 @TOKEN = Bearer {{Me_put.response.body.cyToken}}
 
 @imageId = {{Image_post.response.body.image.id}}
+@markerId = {{Marker_post.response.body.marker.id}}
+@commentId = {{Comment_get_byMarkerId.response.body.comments.0.id}}
 
 ###
 # @name apiInfo_get
@@ -79,3 +81,52 @@ Content-Type: application/json
 PUT http://{{HOST}}{{PREFIX}}/Image/{{imageId}}/blob
 
 < ./ts-logo-128.png
+
+###
+# @name Marker_get
+GET http://{{HOST}}{{PREFIX}}/Marker
+
+###
+# @name Marker_post
+POST http://{{HOST}}{{PREFIX}}/Marker
+Content-Type: application/json
+
+{
+  # "imageId": "{{imageId}}",
+  "text": "Hello World"
+}
+
+###
+# @name Marker_getById
+GET http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+
+###
+# @name Marker_patchById
+PATCH http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+Content-Type: application/json
+
+{
+  "x": {{$randomInt 0 300}},
+  "y": {{$randomInt 0 100}}
+}
+
+###
+# @name Marker_delById
+DELETE http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+
+###
+# @name Comment_get_byMarkerId
+GET http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment
+
+###
+# @name Comment_post_byMarkerId
+POST http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment
+Content-Type: application/json
+
+{
+  "text": "Hello John"
+}
+
+###
+# @name Comment_del_byMarkerId_byCommentId
+DELETE http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment/{{commentId}}

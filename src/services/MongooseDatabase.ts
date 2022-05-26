@@ -3,12 +3,23 @@ import mongoose, { Connection } from 'mongoose';
 import Container, { Service } from 'typedi';
 
 import logger from '../logger';
-import { Image, ImageModel, User, UserModel } from '../models';
+import {
+  Comment,
+  CommentModel,
+  Image,
+  ImageModel,
+  Marker,
+  MarkerModel,
+  User,
+  UserModel,
+} from '../models';
 import AppEnv from './AppEnv';
 
 interface Models {
   User: UserModel;
   Image: ImageModel;
+  Marker: MarkerModel;
+  Comment: CommentModel;
 }
 
 @Service()
@@ -62,6 +73,8 @@ export default class MongooseDatabase {
 
   readonly UserModel: UserModel;
   readonly ImageModel: ImageModel;
+  readonly MarkerModel: MarkerModel;
+  readonly CommentModel: CommentModel;
 
   constructor(conn?: Connection) {
     this.conn = conn ?? MongooseDatabase.conn();
@@ -69,6 +82,8 @@ export default class MongooseDatabase {
 
     this.UserModel = models.User;
     this.ImageModel = models.Image;
+    this.MarkerModel = models.Marker;
+    this.CommentModel = models.Comment;
   }
 
   private _models(): Models {
@@ -77,6 +92,8 @@ export default class MongooseDatabase {
     return {
       User: getModelForClass(User, options),
       Image: getModelForClass(Image, options),
+      Marker: getModelForClass(Marker, options),
+      Comment: getModelForClass(Comment, options),
     };
   }
 }

@@ -4,7 +4,15 @@ import { expect } from 'chai';
 import { after, before, describe, it } from 'mocha';
 import { ObjectId } from 'mongodb';
 
-import { ImageModel, UserDocument, UserModel } from '../dist/models';
+import {
+  CommentDocument,
+  CommentModel,
+  ImageModel,
+  MarkerDocument,
+  MarkerModel,
+  UserDocument,
+  UserModel,
+} from '../dist/models';
 import MongooseDatabase from '../dist/services/MongooseDatabase';
 import { setupDb, teardownDb } from './db';
 
@@ -127,6 +135,7 @@ describe('models', () => {
           userId: new ObjectId(),
           extension: 'png',
         });
+        assert.fail('should not reach here');
       } catch (err) {
         const { name } = err as Error;
         expect(name).equals('ValidationError');
@@ -139,10 +148,139 @@ describe('models', () => {
           userId,
           extension: 'txt',
         });
+        assert.fail('should not reach here');
       } catch (err) {
         const { name } = err as Error;
         expect(name).equals('ValidationError');
       }
+    });
+  });
+
+  let markerThread1: MarkerDocument;
+  let markerThread2: MarkerDocument;
+
+  describe('Marker', () => {
+    let Marker: MarkerModel;
+    let imageId: ObjectId;
+
+    before(async () => {
+      Marker = db.models.Marker;
+
+      const image = await db.models.Image.findOne();
+      assert(image);
+      imageId = image._id;
+    });
+
+    it('should create a new marker on canvas', async () => {
+      const marker = await Marker.create({});
+      expect(marker.imageId).is.undefined;
+      expect(marker.x).equals(0);
+      expect(marker.y).equals(0);
+
+      markerThread1 = marker;
+    });
+
+    it('should create a new marker on image', async () => {
+      const marker = await Marker.create({ imageId });
+      assert(marker.imageId);
+      expect(marker.imageId.equals(imageId)).is.true;
+      expect(marker.x).equals(0);
+      expect(marker.y).equals(0);
+
+      markerThread2 = marker;
+    });
+
+    it('should reject nonexistent imageId', async () => {
+      try {
+        await Marker.create({ imageId: new ObjectId() });
+        assert.fail('should not reach here');
+      } catch (err) {
+        const { name } = err as Error;
+        expect(name).equals('ValidationError');
+      }
+    });
+  });
+
+  let commentOnThread2: CommentDocument;
+
+  describe('Comment', () => {
+    let Comment: CommentModel;
+    let userId: ObjectId;
+
+    before(async () => {
+      Comment = db.models.Comment;
+
+      const user = await db.models.User.findOne();
+      assert(user);
+      userId = user._id;
+    });
+
+    it('should create 2 comments on thread1', async () => {
+      const markerId = markerThread1._id;
+      const comments = await Comment.create([
+        { userId, markerId, text: 'test1' },
+        { userId, markerId, text: 'test2' },
+      ]);
+
+      comments.forEach((c, i) => {
+        assert(c.userId.equals(userId));
+        assert(c.markerId.equals(markerId));
+        expect(c.text).equals(`test${i + 1}`);
+      });
+    });
+
+    it('should create a comment on thread2', async () => {
+      const markerId = markerThread2._id;
+      const text = 'test3';
+      const comment = await Comment.create({ userId, markerId, text });
+
+      assert(comment.userId.equals(userId));
+      assert(comment.markerId.equals(markerId));
+      expect(comment.text).equals(text);
+
+      commentOnThread2 = comment;
+    });
+
+    it('should reject nonexistent markerId', async () => {
+      try {
+        await Comment.create([
+          { userId, markerId: new ObjectId(), text: 'test' },
+        ]);
+        assert.fail('should not reach here');
+      } catch (err) {
+        const { name } = err as Error;
+        expect(name).equals('ValidationError');
+      }
+    });
+  });
+
+  describe('Comment Thread with Marker', () => {
+    let Marker: MarkerModel;
+    let Comment: CommentModel;
+
+    before(async () => {
+      Marker = db.models.Marker;
+      Comment = db.models.Comment;
+    });
+
+    it('should also remove comments by removing marker', async () => {
+      const markerId = markerThread1._id;
+      let commentCount = await Comment.countDocuments({ markerId });
+      expect(commentCount).equals(2);
+
+      await markerThread1.remove();
+      commentCount = await Comment.countDocuments({ markerId });
+      expect(commentCount).equals(0);
+    });
+
+    it('should also remove marker by removing all comments', async () => {
+      const { _id } = markerThread2;
+      let markerExists = !!(await Marker.exists({ _id }));
+      expect(markerExists).is.true;
+
+      await commentOnThread2.remove();
+      markerExists = !!(await Marker.exists({ _id }));
+      expect(markerExists).is.false;
     });
   });
 });
