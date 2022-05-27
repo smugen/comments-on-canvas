@@ -62,6 +62,10 @@ typings/
 .next
 
 /.git
+/.vscode
 
 secret/
 dist/
+test/
+tsdoc/
+upload/

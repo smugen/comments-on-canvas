@@ -27,7 +27,8 @@
     "tsdoc",
     "mkdir",
     "nocopy",
-    "INITDB"
+    "INITDB",
+    "virtuals"
   ],
   "words": ["mongodata", "pswd"]
 }

@@ -22,8 +22,8 @@
     "streetsidesoftware.code-spell-checker",
     // Prettier - Code formatter
     "esbenp.prettier-vscode",
-    // GraphQL
-    "graphql.vscode-graphql"
+    // REST Client
+    "humao.rest-client"
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
   "unwantedRecommendations": []

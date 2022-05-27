@@ -1,0 +1,133 @@
+@HOST = 127.0.0.1
+# @HOST = 127.0.0.1:8888
+@PREFIX = /api
+@TOKEN = Bearer {{Me_put.response.body.cyToken}}
+
+@imageId = {{Image_post.response.body.image.id}}
+@markerId = {{Marker_post.response.body.marker.id}}
+@commentId = {{Comment_get_byMarkerId.response.body.comments.0.id}}
+
+###
+# @name apiInfo_get
+GET http://{{HOST}}{{PREFIX}}
+
+###
+# @name apiInfo_post
+POST http://{{HOST}}{{PREFIX}}
+Content-Type: application/json
+
+{
+  "uuid": "{{$guid}}",
+  "time": "{{$localDatetime iso8601}}"
+}
+
+###
+# @name Me_get
+GET http://{{HOST}}{{PREFIX}}/Me
+
+###
+# @name Me_put
+PUT http://{{HOST}}{{PREFIX}}/Me
+Content-Type: application/json
+
+{
+  "username": "cywang@email.com",
+  "password": "123456"
+}
+
+###
+# @name Me_del
+DELETE http://{{HOST}}{{PREFIX}}/Me
+
+###
+# @name User_post
+POST http://{{HOST}}{{PREFIX}}/User
+Content-Type: application/json
+
+{
+  "name": "CY Wang",
+  "username": "cywang@email.com",
+  "password": "123456"
+}
+
+###
+# @name Image_get
+GET http://{{HOST}}{{PREFIX}}/Image
+
+###
+# @name Image_post
+POST http://{{HOST}}{{PREFIX}}/Image
+Content-Type: application/json
+
+{
+  "extension": "png"
+}
+
+###
+# @name Image_getById
+GET http://{{HOST}}{{PREFIX}}/Image/{{imageId}}
+
+###
+# @name Image_patchById
+PATCH http://{{HOST}}{{PREFIX}}/Image/{{imageId}}
+Content-Type: application/json
+
+{
+  "x": {{$randomInt 0 300}},
+  "y": {{$randomInt 0 100}}
+}
+
+###
+# @name Image_putById_blob
+PUT http://{{HOST}}{{PREFIX}}/Image/{{imageId}}/blob
+
+< ./ts-logo-128.png
+
+###
+# @name Marker_get
+GET http://{{HOST}}{{PREFIX}}/Marker
+
+###
+# @name Marker_post
+POST http://{{HOST}}{{PREFIX}}/Marker
+Content-Type: application/json
+
+{
+  # "imageId": "{{imageId}}",
+  "text": "Hello World"
+}
+
+###
+# @name Marker_getById
+GET http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+
+###
+# @name Marker_patchById
+PATCH http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+Content-Type: application/json
+
+{
+  "x": {{$randomInt 0 300}},
+  "y": {{$randomInt 0 100}}
+}
+
+###
+# @name Marker_delById
+DELETE http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}
+
+###
+# @name Comment_get_byMarkerId
+GET http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment
+
+###
+# @name Comment_post_byMarkerId
+POST http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment
+Content-Type: application/json
+
+{
+  "text": "Hello John"
+}
+
+###
+# @name Comment_del_byMarkerId_byCommentId
+DELETE http://{{HOST}}{{PREFIX}}/Marker/{{markerId}}/Comment/{{commentId}}
