@@ -4,7 +4,8 @@ import 'reflect-metadata';
 import Container from 'typedi';
 
 import logger from './logger';
-import MongooseDatabase from './services/MongooseDatabase';
+import AppEnv from './services/AppEnv';
+import HttpApp from './services/HttpApp';
 
 /** this module (.js) run as entry point `process.argv[1]` */
 if (require.main === module) {
@@ -32,6 +33,10 @@ async function main() {
     });
   }
 
-  const db = Container.get(MongooseDatabase);
-  logger.info('main', { db });
+  const env = Container.get(AppEnv);
+  const httpApp = Container.get(HttpApp).getKoa();
+  const server = httpApp.listen(env.httpPort).on('listening', () => {
+    const address = server.address();
+    logger.info('HTTP Server listening on', { address });
+  });
 }
