@@ -50,7 +50,7 @@
     - Store password using [scrypt](https://en.wikipedia.org/wiki/Scrypt)
 - API
   - [Koa.js](https://koajs.com/)
-  - Manual test using VSCode extension [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) with [test/api.http](test/api.http) (instead of Postman)
+  - **Manual test using VSCode extension [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) with [test/api.http](test/api.http) (instead of Postman)**
   - API Tests using [node-fetch](https://github.com/node-fetch/node-fetch/tree/2.x#readme)
   - User
     - `addUser` for Registration
@@ -74,8 +74,8 @@
       - `listComment` for listing comments of a marker (in a thread)
       - `addComment` for adding a comment to a marker (to a thread)
       - `delComment` for deleting a comment from a marker (from a thread)
+- [Dockerfile](Dockerfile)
 
 ### Iteration 2
 
-- Dockerfile
 - Realtime

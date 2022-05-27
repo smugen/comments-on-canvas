@@ -23,6 +23,7 @@
     "docker-up": "docker compose --env-file=secret/.env up -d",
     "docker-down": "docker compose --env-file=secret/.env down",
     "docker-logs": "docker compose --env-file=secret/.env logs -f --tail=10",
+    "docker-build": "docker compose --env-file=secret/.env build",
     "tsdoc": "typedoc && start tsdoc/index.html",
     "cspell": "cspell **/*",
     "lint": "eslint src test ./*.js --ext js,ts",

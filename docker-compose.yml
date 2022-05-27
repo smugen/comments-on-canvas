@@ -21,3 +21,22 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?Missing env MONGO_INITDB_ROOT_USERNAME}"
       MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?Missing env MONGO_INITDB_ROOT_PASSWORD}"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${npm_package_name}:${npm_package_version}
+    # restart: always
+    ports:
+      - target: 80
+        published: ${APP_PUBLISHED_PORT:-8888}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME:?Missing env MONGO_INITDB_ROOT_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD:?Missing env MONGO_INITDB_ROOT_PASSWORD}"
+      MONGOOSE_DEBUG: "${MONGOOSE_DEBUG:-false}"
+      MONGODB_HOST: db
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: "${npm_package_name}"
+      MONGODB_AUTH_SOURCE: admin
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      NODE_ENV: "${NODE_ENV:-development}"

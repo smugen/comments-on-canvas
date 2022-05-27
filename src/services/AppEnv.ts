@@ -14,7 +14,7 @@ export default class AppEnv {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   readonly npm_package_name = process.env.npm_package_name;
   readonly LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
-  readonly HTTP_PORT = process.env.HTTP_PORT;
+  readonly HTTP_PORT = process.env.HTTP_PORT ?? '80';
 
   readonly MONGOOSE_DEBUG = !!JSON.parse(process.env.MONGOOSE_DEBUG || 'false');
   readonly MONGOOSE_AUTO_INDEX = !!JSON.parse(
@@ -24,7 +24,7 @@ export default class AppEnv {
   readonly httpPort?: number;
 
   constructor() {
-    const httpPort = parseInt(this.HTTP_PORT ?? '', 10);
+    const httpPort = parseInt(this.HTTP_PORT, 10);
     httpPort >= 0 && httpPort <= 65535 && (this.httpPort = httpPort);
   }
 
