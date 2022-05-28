@@ -5,12 +5,14 @@ import {
   index,
   modelOptions,
   mongoose,
+  post,
   pre,
   prop,
 } from '@typegoose/typegoose';
 import Container from 'typedi';
 
 import MongooseDatabase from '../services/MongooseDatabase';
+import RealtimeService from '../services/RealtimeService';
 
 export type MarkerDocument = DocumentType<Marker>;
 export type MarkerModel = ReturnModelType<typeof Marker>;
@@ -37,6 +39,8 @@ export interface Marker extends defaultClasses.Base {}
 @index({ createdAt: 1 })
 @index({ updatedAt: 1 })
 @pre<Marker>('remove', removeComments, { document: true })
+@post<Marker>('save', emitSaved)
+@post<Marker>('remove', emitRemoved, { document: true })
 export class Marker extends defaultClasses.TimeStamps {
   /** placed on */
   @prop({
@@ -75,4 +79,14 @@ async function removeComments(this: MarkerDocument) {
   const db = Container.get(MongooseDatabase);
   const comments = await db.CommentModel.find({ markerId: this._id });
   await Promise.all(comments.map(c => c.remove()));
+}
+
+/** @this MarkerDocument */
+function emitSaved(this: MarkerDocument) {
+  Container.get(RealtimeService).emitSaved({ marker: this });
+}
+
+/** @this MarkerDocument */
+function emitRemoved(this: MarkerDocument) {
+  Container.get(RealtimeService).emitRemoved({ markerId: this.id });
 }

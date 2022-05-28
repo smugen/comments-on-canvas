@@ -55,6 +55,8 @@
     "mongoose": "^6.3.4",
     "node-fetch": "^2.6.7",
     "reflect-metadata": "^0.1.13",
+    "socket.io": "^4.5.1",
+    "socket.io-client": "^4.5.1",
     "source-map-support": "^0.5.21",
     "string-to-color": "^2.2.2",
     "typedi": "^0.10.0",

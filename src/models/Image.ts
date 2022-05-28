@@ -4,12 +4,14 @@ import {
   defaultClasses,
   index,
   modelOptions,
+  post,
   prop,
 } from '@typegoose/typegoose';
 import mongoose from 'mongoose';
 import Container from 'typedi';
 
 import MongooseDatabase from '../services/MongooseDatabase';
+import RealtimeService from '../services/RealtimeService';
 
 export type ImageDocument = DocumentType<Image>;
 export type ImageModel = ReturnModelType<typeof Image>;
@@ -37,6 +39,8 @@ export interface Image extends defaultClasses.Base {}
 })
 @index({ createdAt: 1 })
 @index({ updatedAt: 1 })
+@post<Image>('save', emitSaved)
+@post<Image>('remove', emitRemoved, { document: true })
 export class Image extends defaultClasses.TimeStamps {
   /** uploader */
   @prop({
@@ -70,4 +74,14 @@ export class Image extends defaultClasses.TimeStamps {
     validate: Number.isInteger,
   })
   y!: number;
+}
+
+/** @this ImageDocument */
+function emitSaved(this: ImageDocument) {
+  Container.get(RealtimeService).emitSaved({ image: this });
+}
+
+/** @this ImageDocument */
+function emitRemoved(this: ImageDocument) {
+  Container.get(RealtimeService).emitRemoved({ imageId: this.id });
 }
