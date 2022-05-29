@@ -12,7 +12,7 @@ import Container from 'typedi';
 
 import HttpApp from '../dist/services/HttpApp';
 import MongooseDatabase from '../dist/services/MongooseDatabase';
-import { setupDb, teardownDb } from './db';
+import { bearer, prefix, randomInt, setupDb, teardownDb } from './common';
 
 describe('apis', () => {
   let db: MongooseDatabase;
@@ -510,15 +510,3 @@ describe('apis', () => {
     });
   });
 });
-
-function prefix(port: number) {
-  return `http://127.0.0.1:${port}/api`;
-}
-
-function bearer(token: string) {
-  return { Authorization: `Bearer ${token}` };
-}
-
-function randomInt(max: number) {
-  return Math.floor(Math.random() * max);
-}

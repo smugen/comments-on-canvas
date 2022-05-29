@@ -6,6 +6,7 @@ import Container from 'typedi';
 import logger from './logger';
 import AppEnv from './services/AppEnv';
 import HttpApp from './services/HttpApp';
+import RealtimeService from './services/RealtimeService';
 
 /** this module (.js) run as entry point `process.argv[1]` */
 if (require.main === module) {
@@ -39,4 +40,5 @@ async function main() {
     const address = server.address();
     logger.info('HTTP Server listening on', { address });
   });
+  Container.get(RealtimeService).attachServer(server);
 }

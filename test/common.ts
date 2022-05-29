@@ -19,3 +19,15 @@ export async function teardownDb(db: MongooseDatabase) {
   await db.conn.dropDatabase();
   await db.conn.close();
 }
+
+export function prefix(port: number) {
+  return `http://127.0.0.1:${port}/api`;
+}
+
+export function bearer(token: string) {
+  return { Authorization: `Bearer ${token}` };
+}
+
+export function randomInt(max: number) {
+  return Math.floor(Math.random() * max);
+}

@@ -11,6 +11,7 @@ import {
 import Container from 'typedi';
 
 import MongooseDatabase from '../services/MongooseDatabase';
+import RealtimeService from '../services/RealtimeService';
 
 export type CommentDocument = DocumentType<Comment>;
 export type CommentModel = ReturnModelType<typeof Comment>;
@@ -36,7 +37,9 @@ export interface Comment extends defaultClasses.Base {}
 })
 @index({ createdAt: 1 })
 @index({ updatedAt: 1 })
+@post<Comment>('save', emitSaved)
 @post<Comment>('remove', removeMarker, { document: true })
+@post<Comment>('remove', emitRemoved, { document: true })
 export class Comment extends defaultClasses.TimeStamps {
   /** commenter */
   @prop({
@@ -85,4 +88,14 @@ async function removeMarker(this: CommentDocument) {
       await marker.remove();
     }
   }
+}
+
+/** @this CommentDocument */
+function emitSaved(this: CommentDocument) {
+  Container.get(RealtimeService).emitSaved({ comment: this });
+}
+
+/** @this CommentDocument */
+function emitRemoved(this: CommentDocument) {
+  Container.get(RealtimeService).emitRemoved({ commentId: this.id }, this);
 }

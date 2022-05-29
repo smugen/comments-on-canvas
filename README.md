@@ -79,3 +79,16 @@
 ### Iteration 2
 
 - Realtime
+  - [Socket.io](https://socket.io/)
+  - Server events
+    - `saved` emitted when added or updated, event data contains one of these fields:
+      - image
+      - marker
+      - comment (client emitting `subscribeMarker` is required to receive)
+    - `removed` emitted when deleted, event data contains one of these fields:
+      - imageId
+      - markerId
+      - commentId (client emitting `subscribeMarker` is required to receive)
+  - Client events
+    - `subscribeMarker` for subscribing to events of comments under a marker (open the comment dialog)
+    - `unsubscribeMarker` for unsubscribing from events of comments under a marker (close the comment dialog or marker removed)
