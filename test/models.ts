@@ -14,7 +14,7 @@ import {
   UserModel,
 } from '../dist/models';
 import MongooseDatabase from '../dist/services/MongooseDatabase';
-import { setupDb, teardownDb } from './db';
+import { setupDb, teardownDb } from './common';
 
 describe('models', () => {
   let db: MongooseDatabase;
